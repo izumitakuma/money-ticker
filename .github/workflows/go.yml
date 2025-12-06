@@ -13,19 +13,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        go-version: ['1.25']
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v6.0.1
 
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgtk-3-dev \
+          libayatana-appindicator3-dev \
+          libwebkit2gtk-4.0-dev \
+          pkg-config \
+          build-essential
+
     - name: Set up Go
       uses: actions/setup-go@v6.1.0
       with:
-        go-version: ${{ matrix.go-version }}
+        go-version: '1.25'
         check-latest: true
+      env:
+        CGO_ENABLED: 1
 
     - name: Cache Go modules
       uses: actions/cache@v4
@@ -33,9 +41,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-1.25-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-${{ matrix.go-version }}-
+          ${{ runner.os }}-go-1.25-
 
     - name: Download dependencies
       run: go mod download
@@ -56,3 +64,5 @@ jobs:
 
     - name: Build
       run: go build -v ./...
+      env:
+        CGO_ENABLED: 1
