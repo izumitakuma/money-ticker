@@ -24,8 +24,15 @@ go run main.go
 
 ## Requirements
 
-- macOS
-- Go 1.21以上（ビルドする場合）
+- macOSまたはUbuntu/Linux
+
+### Ubuntu/Linux 追加要件
+Ubuntu/Linux システムの場合は、必要な依存関係をインストールします。
+```
+sudo apt update
+sudo apt install -y libayatana-appindicator3-dev pkg-config
+```
+
 
 ## Usage
 
