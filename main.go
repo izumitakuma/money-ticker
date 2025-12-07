@@ -76,7 +76,7 @@ func getUserInput() (time.Time, float64) {
 }
 
 func (w *WorkTimer) updateStatusForStartedWork(duration time.Duration) {
-	// durationを整数化し、workTimerの経過時間に加算する
+	// durationを絶対値化し、workTimerの経過時間に加算する
 	w.elpasedSeconds += int(math.Abs(duration.Seconds()))
 
 	go func() {
