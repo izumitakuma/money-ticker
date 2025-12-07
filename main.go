@@ -14,7 +14,7 @@ import (
 
 type WorkTimer struct {
 	startTime      time.Time // 勤務開始時間
-	hourlyWage     int       // 時給
+	hourlyWage     float64   // 時給
 	elpasedSeconds int       // 稼働時間(秒)
 	quit           *systray.MenuItem
 }
@@ -42,7 +42,7 @@ func NewWorkConfig() WorkConfig {
 	}
 }
 
-func NewWorkTimer(startTime time.Time, houryWage int, quit *systray.MenuItem) *WorkTimer {
+func NewWorkTimer(startTime time.Time, houryWage float64, quit *systray.MenuItem) *WorkTimer {
 	return &WorkTimer{
 		startTime:      startTime,
 		hourlyWage:     houryWage,
@@ -51,7 +51,7 @@ func NewWorkTimer(startTime time.Time, houryWage int, quit *systray.MenuItem) *W
 	}
 }
 
-func getUserInput() (time.Time, int) {
+func getUserInput() (time.Time, float64) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Println("勤務開始時間 (HH:MM)")
@@ -68,7 +68,7 @@ func getUserInput() (time.Time, int) {
 	fmt.Println("ーーーーーーーーーーーーーーーーーーーー")
 	fmt.Println("時給(円)")
 	scanner.Scan()
-	hourlyWage, err := strconv.Atoi(scanner.Text())
+	hourlyWage, err := strconv.ParseFloat(scanner.Text(), 64)
 	if err != nil {
 		fmt.Println("数値で入力してください")
 	}
@@ -127,7 +127,7 @@ func (w *WorkTimer) calculateAndUpdateTitle() {
 	nowTime := time.Now().Local().Hour()
 	isNightTime := nowTime >= workConfig.NightStart || nowTime < workConfig.NightEnd
 
-	hourlyWagePerSeconds := float64(w.hourlyWage) / 3600
+	hourlyWagePerSeconds := w.hourlyWage / 3600
 	overTimeSeconds := w.elpasedSeconds - workConfig.RegularSeconds
 
 	var totalEarnings float64
@@ -165,7 +165,7 @@ func (w *WorkTimer) calculateAndUpdateTitle() {
 		return
 	}
 
-	systray.SetTitle(fmt.Sprintf("%s ¥%d", title, int(math.Round(totalEarnings))))
+	systray.SetTitle(fmt.Sprintf("%s ¥%.2f", title, totalEarnings))
 }
 
 func main() {
