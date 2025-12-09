@@ -127,34 +127,35 @@ func (w *WorkTimer) calculateAndUpdateTitle() {
 	nowTime := time.Now().Local().Hour()
 	isNightTime := nowTime >= workConfig.NightStart || nowTime < workConfig.NightEnd
 
-	hourlyWagePerSeconds := w.hourlyWage / 3600
+	hourlyWagePerSeconds := float64(w.hourlyWage) / 3600
 	overTimeSeconds := w.elpasedSeconds - workConfig.RegularSeconds
 
 	var totalEarnings float64
 	var title string
 
+	// 正社員は8時間+休憩1時間の間拘束され、休憩１時間は給料として形状されない
 	switch {
 	// ケース1: 定時 (通常)
 	case w.elpasedSeconds < workConfig.RegularSeconds && !isNightTime:
-		totalEarnings = float64(w.elpasedSeconds) * hourlyWagePerSeconds
+		totalEarnings = float64(w.elpasedSeconds) * hourlyWagePerSeconds * (8.0 / 9.0)
 		title = "現在の稼ぎ"
 
 	// ケース2: 残業 (1.25倍)
 	case workConfig.RegularSeconds <= w.elpasedSeconds && !isNightTime:
-		regularEarnings := float64(workConfig.RegularSeconds) * hourlyWagePerSeconds
+		regularEarnings := float64(workConfig.RegularSeconds) * hourlyWagePerSeconds * (8.0 / 9.0)
 		overtimeEarnings := float64(overTimeSeconds) * hourlyWagePerSeconds * 1.25
 		totalEarnings = regularEarnings + overtimeEarnings
 		title = "残業ブースト中🔥"
 
 	// ケース3: 定時で深夜 (1.25倍)
 	case w.elpasedSeconds < workConfig.RegularSeconds && isNightTime:
-		totalEarnings = float64(w.elpasedSeconds) * hourlyWagePerSeconds * 1.25
+		totalEarnings = float64(w.elpasedSeconds) * hourlyWagePerSeconds * 1.25 * (8.0 / 9.0)
 		title = "深夜勤務中🌙"
 
 	// ケース4: 残業で深夜 (定時分 + 残業分×1.5倍)
 	case workConfig.RegularSeconds <= w.elpasedSeconds && isNightTime:
 		// 定時分は通常計算
-		regularEarnings := float64(workConfig.RegularSeconds) * hourlyWagePerSeconds
+		regularEarnings := float64(workConfig.RegularSeconds) * hourlyWagePerSeconds * (8.0 / 9.0)
 		// 残業分は1.5倍（残業1.25 + 深夜0.25 = 1.5）
 		overtimeEarnings := float64(overTimeSeconds) * hourlyWagePerSeconds * 1.5
 		totalEarnings = regularEarnings + overtimeEarnings
