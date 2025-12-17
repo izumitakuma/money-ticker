@@ -55,7 +55,10 @@ func getUserInput() (time.Time, float64) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Println("勤務開始時間 (HH:MM)")
-	scanner.Scan()
+	if !scanner.Scan() {
+		fmt.Println("入力の読み取りに失敗しました")
+		return time.Time{}, 0
+	}
 
 	now := time.Now()
 	timeStr := fmt.Sprintf("%d-%02d-%02d %s", now.Year(), now.Month(), now.Day(), scanner.Text())
@@ -67,12 +70,25 @@ func getUserInput() (time.Time, float64) {
 
 	fmt.Println("ーーーーーーーーーーーーーーーーーーーー")
 	fmt.Println("時給(円)")
-	scanner.Scan()
-	hourlyWage, err := strconv.ParseFloat(scanner.Text(), 64)
-	if err != nil {
-		fmt.Println("数値で入力してください")
+	for {
+		if !scanner.Scan() {
+			fmt.Println("入力の読み取りに失敗しました")
+			return time.Time{}, 0
+		}
+
+		hourlyWage, err := strconv.ParseFloat(scanner.Text(), 64)
+		if err != nil {
+			fmt.Println("数値で入力してください")
+			continue
+		}
+
+		if hourlyWage <= 0 {
+			fmt.Println("時給は0より大きい値を入力してください")
+			continue
+		}
+
+		return startTime, hourlyWage
 	}
-	return startTime, hourlyWage
 }
 
 func (w *WorkTimer) updateStatusForStartedWork(duration time.Duration) {
