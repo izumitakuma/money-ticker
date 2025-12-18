@@ -54,18 +54,23 @@ func NewWorkTimer(startTime time.Time, houryWage float64, quit *systray.MenuItem
 func getUserInput() (time.Time, float64) {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	var startTime time.Time
 	fmt.Println("勤務開始時間 (HH:MM)")
-	if !scanner.Scan() {
-		fmt.Println("入力の読み取りに失敗しました")
-		return time.Time{}, 0
-	}
+	for {
+		if !scanner.Scan() {
+			fmt.Println("入力の読み取りに失敗しました")
+			return time.Time{}, 0
+		}
 
-	now := time.Now()
-	timeStr := fmt.Sprintf("%d-%02d-%02d %s", now.Year(), now.Month(), now.Day(), scanner.Text())
-	startTime, err := time.ParseInLocation("2006-01-02 15:04", timeStr, now.Location())
-	if err != nil {
-		fmt.Println("時間の形式が正しくありません (例: 09:30)")
-		return time.Time{}, 0
+		now := time.Now()
+		timeStr := fmt.Sprintf("%d-%02d-%02d %s", now.Year(), now.Month(), now.Day(), scanner.Text())
+		t, err := time.ParseInLocation("2006-01-02 15:04", timeStr, now.Location())
+		if err != nil {
+			fmt.Println("時間の形式が正しくありません (例: 09:30)")
+			continue
+		}
+		startTime = t
+		break
 	}
 
 	fmt.Println("ーーーーーーーーーーーーーーーーーーーー")
